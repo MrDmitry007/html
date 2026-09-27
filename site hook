@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TikHook AI — Генератор заголовков TikTok</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #060608;
+      --card-bg: #121217;
+      --card-border: #1e1f26;
+      --text-main: #ffffff;
+      --text-muted: #8b8e9b;
+      --accent-pink: #FE2C55;
+      --accent-cyan: #00F2FE;
+      --badge-pro: linear-gradient(135deg, #FE2C55, #FF5E7E);
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: #000;
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0;
+    }
+
+    /* Мобильный контейнер 420px */
+    .mobile-container {
+      width: 100%;
+      max-width: 420px;
+      min-height: 100vh;
+      background: var(--bg);
+      border-left: 1px solid #1a1a24;
+      border-right: 1px solid #1a1a24;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 90px;
+    }
+
+    /* Верхняя панель */
+    header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      background: rgba(6, 6, 8, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .logo-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 15px rgba(254, 44, 85, 0.3);
+    }
+
+    .logo-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .logo-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .pro-status-chip {
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #1e1f26;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .pro-status-chip.active {
+      background: var(--badge-pro);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(254, 44, 85, 0.4);
+    }
+
+    /* Навигация / Табы */
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 12px 20px 4px;
+      gap: 8px;
+    }
+
+    .tab-btn {
+      padding: 10px 0;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .tab-btn.active {
+      background: #1a1a24;
+      color: #fff;
+      border-color: var(--accent-pink);
+    }
+
+    .tab-btn span.badge {
+      background: #252631;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+    }
+
+    /* Контент экранов */
+    .view {
+      display: none;
+      padding: 16px 20px;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    /* Форма генерации */
+    .field-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-box {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition);
+      user-select: text;
+    }
+
+    .input-box:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 2px rgba(0, 242, 254, 0.15);
+    }
+
+    /* Категории / Чипсы */
+    .chips-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .chip-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .chip-item.selected {
+      background: rgba(254, 44, 85, 0.1);
+      border-color: var(--accent-pink);
+      color: #fff;
+    }
+
+    .btn-generate {
+      width: 100%;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent-pink), #e01d43);
+      color: #fff;
+      border: none;
+      font-size: 15px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(254, 44, 85, 0.35);
+      transition: var(--transition);
+    }
+
+    .btn-generate:active {
+      transform: scale(0.98);
+    }
+
+    /* Карточки заголовков */
+    .hook-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hook-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hook-tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(0, 242, 254, 0.1);
+      color: var(--accent-cyan);
+    }
+
+    .hook-score {
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hook-text {
+      font-size: 15px;
+      line-height: 1.45;
+      font-weight: 700;
+      color: #fff;
+      user-select: text;
+    }
+
+    .hook-actions {
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 10px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--card-border);
+      background: #181920;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+
+    .action-btn:hover {
+      background: #232530;
+      color: #fff;
+    }
+
+    .action-btn.favorite.active {
+      color: var(--accent-pink);
+      border-color: rgba(254, 44, 85, 0.3);
+      background: rgba(254, 44, 85, 0.1);
+    }
+
+    /* PRO баннер */
+    .pro-banner {
+      background: linear-gradient(135deg, #1b1c25 0%, #15161d 100%);
+      border: 1px dashed var(--accent-pink);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .pro-banner-text h4 {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .pro-banner-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-pro-buy {
+      background: var(--badge-pro);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Модалка Paywall */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--accent-pink);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-card h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .modal-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+
+    .modal-features {
+      text-align: left;
+      font-size: 12px;
+      line-height: 1.8;
+      margin-bottom: 20px;
+      background: #181922;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* Тост уведомление */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #22232e;
+      border: 1px solid #333547;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      opacity: 0;
+      z-index: 200;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .empty-state span {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-container">
+    
+    <!-- Хэдер -->
+    <header>
+      <div class="logo" id="logoSecretClick">
+        <div class="logo-badge">⚡</div>
+        <div class="logo-text">
+          <h1>TikHook AI</h1>
+          <p>Viral Headline Machine</p>
+        </div>
+      </div>
+      <div class="pro-status-chip" id="proStatusChip" onclick="openPaywall()">FREE PLAN</div>
+    </header>
+
+    <!-- Переключатель вкладок -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('generator')">
+        🔥 Генератор
+      </button>
+      <button class="tab-btn" onclick="switchTab('favorites')">
+        ❤️ Избранное <span class="badge" id="favCount">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('history')">
+        🕒 История
+      </button>
+    </div>
+
+    <!-- ВКЛАДКА 1: Генератор -->
+    <div id="view-generator" class="view active">
+      <div>
+        <label class="field-label">Тема ролика / Ниша</label>
+        <input type="text" id="topicInput" class="input-box" placeholder="Например: Крипта, Психология, Похудение..." value="Как быстро заработать">
+      </div>
+
+      <div>
+        <label class="field-label">Психологический триггер</label>
+        <div class="chips-grid">
+          <div class="chip-item selected" data-type="provocation" onclick="selectChip(this)">
+            🧨 Провокация
+          </div>
+          <div class="chip-item" data-type="intrigue" onclick="selectChip(this)">
+            🤫 Секрет / Тайна
+          </div>
+          <div class="chip-item" data-type="fear" onclick="selectChip(this)">
+            🛑 Страх ошибки
+          </div>
+          <div class="chip-item" data-type="formula" onclick="selectChip(this)">
+            🚀 Топ 3 лайфхака
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-generate" onclick="generateHooks()">
+        ⚡ Сгенерировать хуки (TikTok)
+      </button>
+
+      <!-- PRO Баннер -->
+      <div class="pro-banner" id="promoBanner" onclick="openPaywall()">
+        <div class="pro-banner-text">
+          <h4>Открой базу Топ-1% блогеров</h4>
+          <p>Секретные вирусные шаблоны с удержанием 90%+</p>
+        </div>
+        <button class="btn-pro-buy">PRO 299₽</button>
+      </div>
+
+      <label class="field-label" style="margin-top: 10px;">Результаты</label>
+      <div id="resultsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+
+    <!-- ВКЛАДКА 2: Избранное -->
+    <div id="view-favorites" class="view">
+      <div id="favoritesList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+    </div>
+
+    <!-- ВКЛАДКА 3: История -->
+    <div id="view-history" class="view">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+        <span class="field-label" style="margin: 0;">Последние запросы</span>
+        <span style="font-size: 11px; color: var(--accent-pink); cursor: pointer;" onclick="clearHistory()">Очистить всё</span>
+      </div>
+      <div id="historyList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+    </div>
+
+  </div>
+
+  <!-- Модальное окно Paywall -->
+  <div class="modal-overlay" id="paywallModal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closePaywall()">✕</button>
+      <div style="font-size: 38px; margin-bottom: 8px;">💎</div>
+      <h3>TikHook PRO</h3>
+      <p>Взрывной буст твоих просмотров и удержания видео</p>
+      <div class="modal-features">
+        ✓ Доступ ко всем 500+ кликбейт-шаблонам<br>
+        ✓ Генерация без лимитов<br>
+        ✓ Аналитика вирусности каждого хука<br>
+        ✓ Экспорт в Telegram/Notion в один клик
+      </div>
+      <button class="btn-generate" onclick="buyProDemo()">Активировать за 299 ₽ / мес</button>
+      <p style="font-size: 10px; color: #555; margin-top: 10px;">
+        *Подсказка: разработчики могут активировать PRO тройным кликом по логотипу
+      </p>
+    </div>
+  </div>
+
+  <!-- Тост уведомление -->
+  <div class="toast" id="toast">📋 Скопировано в буфер!</div>
+
+  <script>
+    // --- ХРАНИЛИЩЕ ШАБЛОНОВ ---
+    const TEMPLATES = {
+      provocation: [
+        "Перестаньте {topic}, пока вы не потеряли всё в 2026 году...",
+        "99% людей делают {topic} абсолютно неправильно!",
+        "Если ты всё ещё тратишь время на {topic} — соболезную.",
+        "Жесткая правда про {topic}, о которой молчат все коучи:"
+      ],
+      intrigue: [
+        "Я скрывал эту схему про {topic} 3 года, но алгоритмы слили её...",
+        "Один секретный трюк в {topic}, который спас мне нервы и деньги.",
+        "Никогда не гуглите это про {topic} ночью...",
+        "Что произойдет, если делать {topic} каждый день в течение месяца?"
+      ],
+      fear: [
+        "Главная ошибка в {topic}, из-за которой 9 из 10 терпят крах.",
+        "Срочно проверь это, если ты как-то связан с {topic}!",
+        "3 признака того, что твой подход к {topic} безнадежно устарел.",
+        "Не вздумай начинать {topic}, пока не досмотришь до 0:15 секунды."
+      ],
+      formula: [
+        "Топ-3 инструмента для {topic}, которые взрывают результаты.",
+        "Пошаговый план: как хакнуть {topic} за 7 дней с нуля.",
+        "Формула из 3 шагов: вот так профи автоматизируют {topic}.",
+        "Чек-лист на миллион: как делать {topic} быстрее в 5 раз."
+      ]
+    };
+
+    let selectedTrigger = 'provocation';
+    let clickCount = 0;
+    let clickTimer = null;
+
+    // --- ИНИЦИАЛИЗАЦИЯ ПРИ ЗАПУСКЕ ---
+    window.addEventListener('DOMContentLoaded', () => {
+      checkProStatus();
+      updateFavCount();
+      generateHooks();
+    });
+
+    // --- ПЕРЕКЛЮЧЕНИЕ ТАБОВ ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+      if (tabId === 'generator') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('view-generator').classList.add('active');
+      } else if (tabId === 'favorites') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('view-favorites').classList.add('active');
+        renderFavorites();
+      } else if (tabId === 'history') {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('view-history').classList.add('active');
+        renderHistory();
+      }
+    }
+
+    // --- ВЫБОР ТРИГГЕРА ---
+    function selectChip(el) {
+      document.querySelectorAll('.chip-item').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedTrigger = el.getAttribute('data-type');
+    }
+
+    // --- ГЕНЕРАЦИЯ ХУКОВ ---
+    function generateHooks() {
+      const topic = document.getElementById('topicInput').value.trim() || 'контент';
+      const patterns = TEMPLATES[selectedTrigger] || TEMPLATES.provocation;
+      
+      const resultsContainer = document.getElementById('resultsList');
+      resultsContainer.innerHTML = '';
+
+      const generated = [];
+
+      patterns.forEach((pat, idx) => {
+        const text = pat.replace('{topic}', topic);
+        const score = Math.floor(Math.random() * 15) + 85; // Рейтинг 85-99%
+        const hookObj = {
+          id: Date.now() + '_' + idx,
+          text: text,
+          score: score,
+          trigger: selectedTrigger,
+          date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        generated.push(hookObj);
+        resultsContainer.appendChild(createHookCard(hookObj));
+      });
+
+      // Сохраняем в историю (localStorage)
+      saveToHistory(topic, generated);
+    }
+
+    // --- СОЗДАНИЕ КАРТОЧКИ ХУКА ---
+    function createHookCard(hook) {
+      const card = document.createElement('div');
+      card.className = 'hook-card';
+      const isFav = isFavorite(hook.text);
+
+      card.innerHTML = `
+        <div class="hook-card-header">
+          <span class="hook-tag">#${hook.trigger.toUpperCase()}</span>
+          <span class="hook-score">⚡ ${hook.score}% вирусность</span>
+        </div>
+        <div class="hook-text">${hook.text}</div>
+        <div class="hook-actions">
+          <button class="action-btn" onclick="copyHook('${escapeHtml(hook.text)}')">
+            📋 Копировать
+          </button>
+          <button class="action-btn favorite ${isFav ? 'active' : ''}" onclick="toggleFavorite('${escapeHtml(hook.text)}', this)">
+            ${isFav ? '❤️ В избранном' : '🤍 В избранное'}
+          </button>
+        </div>
+      `;
+      return card;
+    }
+
+    // --- ИЗБРАННОЕ (localStorage) ---
+    function getFavorites() {
+      return JSON.parse(localStorage.getItem('tikhook_favs') || '[]');
+    }
+
+    function isFavorite(text) {
+      const favs = getFavorites();
+      return favs.includes(text);
+    }
+
+    function toggleFavorite(text, btn) {
+      let favs = getFavorites();
+      if (favs.includes(text)) {
+        favs = favs.filter(item => item !== text);
+        if (btn) {
+          btn.classList.remove('active');
+          btn.innerHTML = '🤍 В избранное';
+        }
+        showToast('Удалено из избранного');
+      } else {
+        favs.push(text);
+        if (btn) {
+          btn.classList.add('active');
+          btn.innerHTML = '❤️ В избранном';
+        }
+        showToast('Сохранено в избранное');
+      }
+      localStorage.setItem('tikhook_favs', JSON.stringify(favs));
+      updateFavCount();
+      
+      // Если находимся во вкладке избранного — перерендерить
+      if (document.getElementById('view-favorites').classList.contains('active')) {
+        renderFavorites();
+      }
+    }
+
+    function updateFavCount() {
+      const favs = getFavorites();
+      document.getElementById('favCount').textContent = favs.length;
+    }
+
+    function renderFavorites() {
+      const container = document.getElementById('favoritesList');
+      const favs = getFavorites();
+      container.innerHTML = '';
+
+      if (favs.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span>💔</span>
+            Пока нет сохраненных хуков.<br>Нажмите «В избранное» у любого заголовка!
+          </div>
+        `;
+        return;
+      }
+
+      favs.forEach((text, i) => {
+        const item = document.createElement('div');
+        item.className = 'hook-card';
+        item.innerHTML = `
+          <div class="hook-text">${text}</div>
+          <div class="hook-actions">
+            <button class="action-btn" onclick="copyHook('${escapeHtml(text)}')">📋 Копировать</button>
+            <button class="action-btn favorite active" onclick="toggleFavorite('${escapeHtml(text)}'); renderFavorites();">🗑️ Удалить</button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // --- ИСТОРИЯ (localStorage) ---
+    function getHistory() {
+      return JSON.parse(localStorage.getItem('tikhook_history') || '[]');
+    }
+
+    function saveToHistory(topic, hooks) {
+      let hist = getHistory();
+      hist.unshift({
+        topic: topic,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        count: hooks.length
+      });
+      // Храним последние 20 запросов
+      if (hist.length > 20) hist.pop();
+      localStorage.setItem('tikhook_history', JSON.stringify(hist));
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('historyList');
+      const hist = getHistory();
+      container.innerHTML = '';
+
+      if (hist.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <span>📜</span>
+            История запросов пуста.
+          </div>
+        `;
+        return;
+      }
+
+      hist.forEach(h => {
+        const item = document.createElement('div');
+        item.style.cssText = 'background: var(--card-bg); border: 1px solid var(--card-border); padding: 12px 14px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; cursor: pointer;';
+        item.innerHTML = `
+          <div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff;">${escapeHtml(h.topic)}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">${h.time} • Сгенерировано ${h.count} вариантов</div>
+          </div>
+          <span style="color: var(--accent-cyan); font-size: 14px;">↻</span>
+        `;
+        item.onclick = () => {
+          document.getElementById('topicInput').value = h.topic;
+          switchTab('generator');
+          generateHooks();
+        };
+        container.appendChild(item);
+      });
+    }
+
+    function clearHistory() {
+      localStorage.removeItem('tikhook_history');
+      renderHistory();
+      showToast('История очищена');
+    }
+
+    // --- ЧИТ-КОД РАЗРАБОТЧИКА: Тройной клик по логотипу ---
+    document.getElementById('logoSecretClick').addEventListener('click', () => {
+      clickCount++;
+      clearTimeout(clickTimer);
+      
+      clickTimer = setTimeout(() => {
+        clickCount = 0;
+      }, 500);
+
+      if (clickCount >= 3) {
+        clickCount = 0;
+        const currentPro = localStorage.getItem('tikhook_pro') === 'true';
+        const newPro = !currentPro;
+        localStorage.setItem('tikhook_pro', newPro);
+        checkProStatus();
+        showToast(newPro ? '⚡ Чит-код активирован: PRO включен!' : 'Чит-код: PRO отключен');
+      }
+    });
+
+    function checkProStatus() {
+      const isPro = localStorage.getItem('tikhook_pro') === 'true';
+      const chip = document.getElementById('proStatusChip');
+      const banner = document.getElementById('promoBanner');
+
+      if (isPro) {
+        chip.textContent = 'PRO VIP';
+        chip.classList.add('active');
+        if (banner) banner.style.display = 'none';
+      } else {
+        chip.textContent = 'FREE PLAN';
+        chip.classList.remove('active');
+        if (banner) banner.style.display = 'flex';
+      }
+    }
+
+    // --- МОДАЛКА И PAYWALL ---
+    function openPaywall() {
+      document.getElementById('paywallModal').classList.add('open');
+    }
+
+    function closePaywall() {
+      document.getElementById('paywallModal').classList.remove('open');
+    }
+
+    function buyProDemo() {
+      localStorage.setItem('tikhook_pro', 'true');
+      checkProStatus();
+      closePaywall();
+      showToast('🎉 PRO подписка активирована!');
+    }
+
+    // --- СКОПИРОВАТЬ В БУФЕР И ТОСТ ---
+    function copyHook(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 Заголовок скопирован в буфер!');
+      }).catch(() => {
+        showToast('Не удалось скопировать');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2200);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
